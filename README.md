@@ -1,64 +1,131 @@
-# Food Ordering Website
+# Swaad - Food Ordering Website
 
-A Django web application for customers and restaurant owners. Customers can find restaurants, browse menus, add food to a cart, and place orders. Restaurant owners can register and manage their restaurant and menu.
+Swaad is a Django web application that connects people who want to order food with restaurant owners who want to manage a restaurant menu and customer orders.
 
-## What it can do
+This repository contains the source code for a local development project. It is not a deployed, public ordering service.
 
-- Customer registration, sign-in, profile, and password reset
-- Restaurant browsing and food menus
-- Vendor registration and restaurant/menu management
-- Shopping cart, coupon codes, and order tracking
-- Restaurant favorites and customer reviews
-- Django admin site for site administration
+## How the project works
 
-## What you need
+### Customer journey
 
-- Python 3.12 or newer
-- pip
-- Google reCAPTCHA keys only if you want to configure real captcha verification
+1. A visitor creates an account. Registration includes a profile form and a reCAPTCHA check.
+2. The customer signs in and browses approved restaurants. They can search and filter the restaurant list.
+3. The customer opens a restaurant, browses available food, and can save the restaurant as a favorite or leave a review.
+4. The customer adds food to their cart, changes quantities, and can apply an eligible coupon.
+5. The customer places an order. If the cart contains items from multiple restaurants, the application creates a separate order for each restaurant.
+6. The customer can view their profile and order details, including each order's current status.
 
-## Run it on your computer
+### Restaurant owner journey
 
-Open PowerShell in the project folder and run:
+1. A restaurant owner creates a customer account and submits a restaurant application.
+2. A site administrator reviews the application and approves the restaurant.
+3. Once approved, the owner can edit restaurant details, add and edit menu items, and hide or restore menu items.
+4. New orders appear on the owner's dashboard. The owner can view an order and update its status.
+
+### Site administration
+
+The Django admin site is available at `/admin/` for an administrator account. Create one locally with:
+
+```powershell
+python manage.py createsuperuser
+```
+
+Administrators can use Django's admin tools to manage records, including restaurant approval.
+
+## Main features
+
+- Customer registration, login, profile editing, and password reset
+- Restaurant search and category filtering
+- Restaurant details, menu items, favorites, and reviews
+- Vendor registration, restaurant approval workflow, and owner dashboard
+- Menu creation, editing, and availability controls
+- Per-customer cart with quantity changes and removal
+- Coupon validation and discounts
+- Orders with separate restaurant fulfillment and status tracking
+- Django admin interface
+
+The cart offers Cash on Delivery and an Online Payment selection. **An online payment gateway is not integrated**, so selecting online payment does not process a real payment. Password-reset emails use Django's console email backend in the current settings.
+
+## Technology
+
+- Python
+- Django
+- SQLite for local development
+- HTML, CSS, Bootstrap, and JavaScript
+- Django Crispy Forms with Bootstrap 5
+- `django-recaptcha` for the registration CAPTCHA
+
+## Run the project locally on Windows
+
+Open PowerShell in the folder containing `manage.py`. Create and activate a virtual environment, then install the packages:
 
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+```
+
+The application has local development defaults and can start without a `.env` file. To set your own Django and reCAPTCHA keys, copy the example and edit it:
+
+```powershell
 Copy-Item .env.example .env
 ```
 
-Open `.env` in a text editor. Replace all three example values with your own credentials:
+Keep `.env` private. It is excluded from Git by `.gitignore`. If you create a `.env` file, install the requirements above so `python-dotenv` can load it.
 
-- `DJANGO_SECRET_KEY`: a new, private Django secret key
-- `RECAPTCHA_PUBLIC_KEY` and `RECAPTCHA_PRIVATE_KEY`: keys from your Google reCAPTCHA account
-
-Without a `.env` file, the project uses Google's published test keys so the registration page can be tried locally. These test keys always pass verification and do **not** protect a public website from spam. Configure your own reCAPTCHA keys in `.env` before deploying or relying on captcha protection.
-
-Do not post the contents of `.env` or commit it to GitHub. Then, in the same PowerShell window:
+Apply database migrations and start the development server:
 
 ```powershell
 python manage.py migrate
 python manage.py runserver
 ```
 
-Open <http://127.0.0.1:8000/> in your browser. The development server is for local testing, not public production hosting.
+Visit <http://127.0.0.1:8000/> in your browser. The development server is intended for local testing, not public hosting.
 
-## Upload the project to GitHub
+### Local reCAPTCHA note
 
-Create an empty repository on GitHub, then run these commands from the project folder. Replace the URL with the one for your repository:
+When no real keys are provided, the project uses Google's published test keys. These keys allow local CAPTCHA testing but always pass verification; they do **not** prevent spam on a public website. Before deploying or relying on CAPTCHA protection, configure your own keys in `.env` and set up production Django security settings.
+
+## Run the tests
+
+With the project's virtual environment activated:
 
 ```powershell
-git init
-git status
-git add .
-git status
-git commit -m "Add Django food ordering project"
-git branch -M main
-git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
-git push -u origin main
+python manage.py test
 ```
 
-Before committing, check `git status`: `.env`, `db.sqlite3`, `media`, and virtual environments should not be listed for commit. `.env.example` is safe to share because it contains example text, not working keys.
+The test suite checks selected account/profile, cart, and order behavior. A passing test suite does not replace manually trying the full customer and restaurant-owner journeys.
 
-If a real secret or reCAPTCHA key was ever pushed to a public repository, remove it from the code **and rotate it with its provider**. Deleting it from a later commit does not make an exposed key safe again.
+## Project layout
+
+```text
+accounts/    Customer and restaurant-owner accounts, restaurants, menus, and reviews
+cart/        Customer shopping cart
+orders/      Coupons, order creation, and order status
+module3/     Django project settings and main URL configuration
+templates/   HTML pages rendered by Django
+static/      CSS and other static assets
+manage.py   Django command-line entry point
+```
+
+Database migrations are stored in each app's `migrations/` folder. Uploaded images are stored in the local `media/` folder during development.
+
+## GitHub and security
+
+The repository includes `.gitignore` rules to keep `.env`, the local SQLite database, uploaded media, and virtual environments out of GitHub. `.env.example` contains example development values; never copy real secrets into that file.
+
+Before pushing changes, review what Git will upload:
+
+```powershell
+git status
+```
+
+Confirm `.env`, `db.sqlite3`, `media`, `.venv`, and `.venv-1` are not listed. Then commit and push:
+
+```powershell
+git add .
+git commit -m "Describe your change"
+git push
+```
+
+The local development secret, debug setting, and test reCAPTCHA keys are not production security settings. Do not deploy this configuration publicly as-is. The repository also contains a `create_test_users` management command with preset demo passwords; use it only in a local test database, never on a public or production site.
