@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container py-5">
+	<div class="profile-shell narrow-shell">
+		<div class="profile-header">
+			<div>
+				<span class="section-tag">Account</span>
+				<h2>Update profile</h2>
+			</div>
+		</div>
+
+		{% if Form1.errors or Form2.errors %}
+			<div class="alert alert-danger" role="alert">
+				<strong>Your profile was not updated.</strong> Please correct the errors below and submit again.
+				{{ Form1.errors }}
+				{{ Form2.errors }}
+			</div>
+		{% endif %}
+
+		<form method="POST" enctype="multipart/form-data" class="profile-form">
+			{% csrf_token %}
+
+			<div class="profile-image-edit">
+				<div class="profile-image-preview-wrap">
+					{% if Form2.instance.userpic %}
+						<img id="profile-image-preview" src="{{ Form2.instance.userpic.url }}" alt="Current profile picture" class="profile-image-preview">
+					{% else %}
+						<div id="profile-image-placeholder" class="profile-image-preview empty-avatar">No image</div>
+						<img id="profile-image-preview" alt="Selected profile picture" class="profile-image-preview d-none">
+					{% endif %}
+				</div>
+				<p class="profile-image-hint">Choose a photo, then select Update to save it.</p>
+			</div>
+
+			<div class="row g-3">
+				<div class="col-md-6">{{ Form1.username|as_crispy_field }}</div>
+				<div class="col-md-6">{{ Form1.email|as_crispy_field }}</div>
+				<div class="col-md-6">{{ Form2.phone|as_crispy_field }}</div>
+				<div class="col-md-6">{{ Form2.age|as_crispy_field }}</div>
+				<div class="col-md-6">{{ Form2.house_no|as_crispy_field }}</div>
+				<div class="col-md-6">{{ Form2.street|as_crispy_field }}</div>
+				<div class="col-md-6">{{ Form2.landmark|as_crispy_field }}</div>
+				<div class="col-md-6">{{ Form2.city|as_crispy_field }}</div>
+				<div class="col-md-6">{{ Form2.state|as_crispy_field }}</div>
+				<div class="col-md-6">{{ Form2.zipcode|as_crispy_field }}</div>
+				<div class="col-md-6">{{ Form2.userpic|as_crispy_field }}</div>
+			</div>
+
+			<div class="text-center mt-4">
+				<button type="submit" class="btn btn-primary btn-lg">Update</button>
+			</div>
+		</form>
+	</div>
+</div>
+<script>
+	const profileImageInput = document.getElementById('id_userpic');
+	const profileImagePreview = document.getElementById('profile-image-preview');
+	const profileImagePlaceholder = document.getElementById('profile-image-placeholder');
+
+	profileImageInput?.addEventListener('change', (event) => {
+		const imageFile = event.target.files[0];
+		if (!imageFile) return;
+
+		profileImagePreview.src = URL.createObjectURL(imageFile);
+		profileImagePreview.classList.remove('d-none');
+		profileImagePlaceholder?.classList.add('d-none');
+	});
+</script>
+{% endblock %}

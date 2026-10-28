@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container-fluid p-0">
+
+    <section class="hero-banner">
+        <div class="hero-content">
+            <span class="section-tag light">Curated dining</span>
+            <h1>Craving something delicious?</h1>
+            <p>Explore handpicked restaurants, comfort classics, and fresh favorites delivered with a warm local touch.</p>
+            <div class="hero-actions">
+                <a href="#vendors" class="btn btn-primary">Explore restaurants</a>
+                <a href="{% url 'profile' %}" class="btn btn-light">My profile</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="feature-strip container">
+        <div class="feature-pill">⚡ Fast delivery</div>
+        <div class="feature-pill">🥗 Fresh picks</div>
+        <div class="feature-pill">⭐ Trusted vendors</div>
+    </div>
+
+    <div class="container py-4">
+        <form method="get" class="search-panel row g-3 align-items-center justify-content-center mb-4">
+            <div class="col-md-4">
+                <input type="text" name="q" class="form-control" placeholder="Search restaurant or city" value="{{ search_query }}">
+            </div>
+            <div class="col-md-3">
+                <select name="category" class="form-select">
+                    <option value="">All categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category }}" {% if category == selected_category %}selected{% endif %}>{{ category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="container py-4" id="vendors">
+        <div class="text-center">
+            <span class="section-tag">Popular picks</span>
+            <h2 class="section-heading">Top Restaurants</h2>
+        </div>
+
+        <div class="row g-4">
+            {% for vendor in top_vendors %}
+            <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+                <a href="{% url 'restaurant_detail' vendor.id %}" class="vendor-card">
+                    {% if vendor.restaurant_img %}
+                        <img src="{{ vendor.restaurant_img.url }}" class="vendor-card-image" alt="{{ vendor.restaurant_name }}">
+                    {% else %}
+                        <div class="vendor-card-image vendor-card-placeholder">{{ vendor.restaurant_name }}</div>
+                    {% endif %}
+
+                    <div class="vendor-card-body">
+                        <h5 class="vendor-name">{{ vendor.restaurant_name }}</h5>
+                        <p class="vendor-meta mb-1">{{ vendor.city }}</p>
+                        {% if vendor.cuisine %}
+                            <p class="vendor-meta mb-2">{{ vendor.cuisine }}</p>
+                        {% endif %}
+                        <div class="rating-pill">
+                            {% if vendor.average_rating %}★ {{ vendor.average_rating|floatformat:1 }}{% else %}★ New{% endif %}
+                        </div>
+                        <span class="btn btn-primary btn-sm">View menu</span>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="empty-state">
+                    No approved vendors available yet.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="container text-center py-4">
+        {% if current_vendor and current_vendor.is_approved %}
+            <a href="{% url 'menu_list' %}" class="btn btn-primary m-2">Manage Menu</a>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

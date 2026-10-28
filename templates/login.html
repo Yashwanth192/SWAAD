@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="login-page">
+    <div class="login-layout">
+        <div class="login-visual">
+            <img src="/media/food/menu_biryani.jpg" alt="A freshly prepared bowl of biryani">
+            <div class="login-visual-copy">
+                <span class="login-visual-kicker"><i class="bi bi-stars" aria-hidden="true"></i> Made for good food</span>
+                <h1>Good to have<br>you back.</h1>
+                <p>Your next favourite meal is waiting.</p>
+            </div>
+        </div>
+
+        <div class="login-form-panel">
+            <div class="login-form-inner">
+                <div class="login-heading">
+                    <span class="login-form-kicker">ACCOUNT SIGN IN</span>
+                    <h2>Welcome back</h2>
+                    <p>Sign in to continue to Swaad.</p>
+                </div>
+
+                <form action="{% url 'login' %}" method="POST" class="auth-form">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" id="username" name="username" class="form-control" placeholder="Enter your username" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="password-input-wrap">
+                            <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+                            <button type="button" id="toggle-password" class="password-visibility-toggle" aria-label="Show password briefly" title="Show password briefly">
+                                <i id="password-toggle-icon" class="bi bi-eye" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary login-submit">
+                        <span>Login</span>
+                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                    </button>
+
+                    <div class="auth-links">
+                        <a href="{% url 'password_reset' %}">Forgot password?</a>
+                        <span>New here? <a href="{% url 'register' %}">Create account</a></span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    const passwordInput = document.getElementById('password');
+    const passwordToggle = document.getElementById('toggle-password');
+    const passwordToggleIcon = document.getElementById('password-toggle-icon');
+    let passwordVisibilityTimer;
+
+    function hidePassword() {
+        passwordInput.type = 'password';
+        passwordToggleIcon.classList.replace('bi-eye-slash', 'bi-eye');
+        passwordToggle.setAttribute('aria-label', 'Show password briefly');
+        passwordToggle.title = 'Show password briefly';
+        clearTimeout(passwordVisibilityTimer);
+    }
+
+    function showPasswordBriefly() {
+        passwordInput.type = 'text';
+        passwordToggleIcon.classList.replace('bi-eye', 'bi-eye-slash');
+        passwordToggle.setAttribute('aria-label', 'Hide password');
+        passwordToggle.title = 'Hide password';
+        clearTimeout(passwordVisibilityTimer);
+        passwordVisibilityTimer = setTimeout(hidePassword, 1000);
+    }
+
+    passwordToggle.addEventListener('click', () => {
+        if (passwordInput.type === 'text') {
+            hidePassword();
+            return;
+        }
+
+        showPasswordBriefly();
+    });
+
+    window.addEventListener('blur', hidePassword);
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) hidePassword();
+    });
+    document.addEventListener('pointerdown', (event) => {
+        if (!event.target.closest('.password-input-wrap')) hidePassword();
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') hidePassword();
+    });
+    passwordInput.form.addEventListener('submit', hidePassword);
+</script>
+{% endblock %}

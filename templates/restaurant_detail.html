@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container restaurant-page">
+    <a href="{% url 'home' %}" class="restaurant-back"><i class="bi bi-arrow-left" aria-hidden="true"></i> Restaurants</a>
+
+    <section class="restaurant-hero">
+        {% if vendor.restaurant_img %}
+            <img src="{{ vendor.restaurant_img.url }}" class="restaurant-cover" alt="{{ vendor.restaurant_name }}">
+        {% else %}
+            <div class="restaurant-cover restaurant-cover-placeholder"><i class="bi bi-shop" aria-hidden="true"></i></div>
+        {% endif %}
+        <div class="restaurant-summary">
+            <div class="restaurant-main-info">
+                <div class="restaurant-kicker">
+                    <span class="cuisine-label">{{ vendor.cuisine|default:"Restaurant" }}</span>
+                    <span>{{ vendor.city }}{% if vendor.state %}, {{ vendor.state }}{% endif %}</span>
+                </div>
+                <h1>{{ vendor.restaurant_name }}</h1>
+                {% if vendor.description %}<p class="restaurant-description">{{ vendor.description }}</p>{% endif %}
+            </div>
+            <div class="restaurant-actions">
+                <div class="restaurant-rating" aria-label="Average rating {{ average_rating|floatformat:1 }} out of 5">
+                    <span aria-hidden="true">★</span>
+                    <strong>{{ average_rating|floatformat:1 }}</strong>
+                </div>
+                <form method="post" class="favorite-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="toggle_favorite">
+                    <button type="submit" class="favorite-heart {% if is_favorite %}is-favorite{% endif %}"
+                            aria-label="{% if is_favorite %}Remove from favorites{% else %}Add to favorites{% endif %}"
+                            aria-pressed="{% if is_favorite %}true{% else %}false{% endif %}"
+                            title="{% if is_favorite %}Remove from favorites{% else %}Add to favorites{% endif %}">
+                        {% if is_favorite %}❤️{% else %}🤍{% endif %}
+                    </button>
+                </form>
+            </div>
+            <div class="restaurant-facts">
+                {% if vendor.delivery_time %}<span><i class="bi bi-clock" aria-hidden="true"></i>{{ vendor.delivery_time }}</span>{% endif %}
+                {% if vendor.minimum_order %}<span><i class="bi bi-bag" aria-hidden="true"></i>Min ₹{{ vendor.minimum_order }}</span>{% endif %}
+                {% if vendor.delivery_fee %}<span><i class="bi bi-bicycle" aria-hidden="true"></i>Delivery ₹{{ vendor.delivery_fee }}</span>{% endif %}
+            </div>
+        </div>
+    </section>
+
+    <section class="menu-section">
+        <div class="detail-section-heading">
+            <div>
+                <span class="section-tag">Made fresh</span>
+                <h2>Available food</h2>
+            </div>
+        </div>
+        <div class="menu-grid">
+            {% for item in menu_items %}
+                <article class="menu-item-card">
+                    {% if item.food_image %}
+                        <img src="{{ item.food_image.url }}" class="menu-item-image" alt="{{ item.food_name }}">
+                    {% else %}
+                        <div class="menu-item-image menu-item-placeholder"><i class="bi bi-egg-fried" aria-hidden="true"></i></div>
+                    {% endif %}
+                    <div class="menu-item-content">
+                        <span class="menu-item-category">{{ item.category }}</span>
+                        <h3>{{ item.food_name }}</h3>
+                        {% if item.description %}<p>{{ item.description }}</p>{% endif %}
+                        <div class="menu-item-footer">
+                            <strong>₹{{ item.price }}</strong>
+                            <form method="post" action="{% url 'cart_add' item.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-bag-plus" aria-hidden="true"></i> Add</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            {% empty %}
+                <div class="menu-empty">No available food items right now.</div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="reviews-section" id="reviews">
+        <div class="detail-section-heading">
+            <div>
+                <span class="section-tag">Your say matters</span>
+                <h2>Ratings &amp; reviews</h2>
+            </div>
+            <div class="review-count"><strong>{{ reviews|length }}</strong> reviews</div>
+        </div>
+
+        <div class="reviews-layout">
+            <form method="post" class="review-composer">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_review">
+                <div class="review-composer-heading">
+                    <span class="review-composer-icon"><i class="bi bi-chat-heart" aria-hidden="true"></i></span>
+                    <div>
+                        <h3>Leave a review</h3>
+                        <p>How was your experience?</p>
+                    </div>
+                </div>
+                <div class="review-field">
+                    {{ review_form.rating.label_tag }}
+                    {{ review_form.rating }}
+                </div>
+                <div class="review-field">
+                    {{ review_form.comment.label_tag }}
+                    {{ review_form.comment }}
+                </div>
+                <button type="submit" class="btn btn-primary review-submit"><i class="bi bi-send" aria-hidden="true"></i> Post review</button>
+            </form>
+
+            <div class="review-list">
+                {% if reviews %}
+                    {% for review in reviews %}
+                        <article class="review-entry">
+                            <div class="review-author">
+                                <span class="review-avatar" aria-hidden="true">{{ review.user.username|first|upper }}</span>
+                                <div>
+                                    <strong>{{ review.user.username }}</strong>
+                                    <small>{{ review.created_at|date:'d M Y' }}</small>
+                                </div>
+                                <span class="review-score">★ {{ review.rating }}/5</span>
+                            </div>
+                            {% if review.comment %}<p class="review-comment">{{ review.comment }}</p>{% endif %}
+                        </article>
+                    {% endfor %}
+                {% else %}
+                    <div class="review-empty">
+                        <i class="bi bi-chat-square-text" aria-hidden="true"></i>
+                        <strong>No reviews yet</strong>
+                        <span>Be the first to share what you thought.</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

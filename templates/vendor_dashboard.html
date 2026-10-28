@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container vendor-dashboard-page">
+    <header class="vendor-dashboard-heading">
+        <div>
+            <span class="section-tag">Kitchen workspace</span>
+            <h1>Dashboard</h1>
+            <p>Your restaurant at a glance.</p>
+        </div>
+        <a href="{% url 'menu_add' %}" class="btn btn-primary vendor-add-menu">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i> Add menu item
+        </a>
+    </header>
+
+    <section class="vendor-identity-banner">
+        {% if vendor.restaurant_img %}
+            <img src="{{ vendor.restaurant_img.url }}" alt="{{ vendor.restaurant_name }}" class="vendor-identity-photo">
+        {% else %}
+            <div class="vendor-identity-placeholder"><i class="bi bi-shop" aria-hidden="true"></i></div>
+        {% endif %}
+        <div class="vendor-identity-copy">
+            <span class="vendor-approved-label"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Approved restaurant</span>
+            <h2>{{ vendor.restaurant_name }}</h2>
+            <p>{{ vendor.vendor_name }} <span aria-hidden="true">·</span> {{ vendor.city }}, {{ vendor.state }}</p>
+            <span class="vendor-phone"><i class="bi bi-telephone" aria-hidden="true"></i> {{ vendor.phone_num }}</span>
+        </div>
+        <a href="{% url 'vendor_edit' %}" class="btn btn-outline-primary vendor-edit-profile">
+            <i class="bi bi-pencil" aria-hidden="true"></i> Edit profile
+        </a>
+    </section>
+
+    <section class="vendor-metrics" aria-label="Restaurant overview">
+        <article class="vendor-metric">
+            <span class="vendor-metric-icon metric-icon-orange"><i class="bi bi-receipt" aria-hidden="true"></i></span>
+            <div><span>Total orders</span><strong>{{ order_count }}</strong></div>
+        </article>
+        <article class="vendor-metric">
+            <span class="vendor-metric-icon metric-icon-green"><i class="bi bi-hourglass-split" aria-hidden="true"></i></span>
+            <div><span>In progress</span><strong>{{ open_order_count }}</strong></div>
+        </article>
+        <article class="vendor-metric">
+            <span class="vendor-metric-icon metric-icon-green"><i class="bi bi-journal-text" aria-hidden="true"></i></span>
+            <div><span>Menu items</span><strong>{{ menu_item_count }}</strong></div>
+        </article>
+        <article class="vendor-metric">
+            <span class="vendor-metric-icon metric-icon-orange"><i class="bi bi-check2-circle" aria-hidden="true"></i></span>
+            <div><span>Available dishes</span><strong>{{ available_menu_count }}</strong></div>
+        </article>
+    </section>
+
+    <section class="vendor-dashboard-section" aria-labelledby="vendor-orders-heading">
+        <div class="vendor-dashboard-section-heading">
+            <div>
+                <span class="section-tag">Fulfillment</span>
+                <h2 id="vendor-orders-heading">Orders</h2>
+            </div>
+            <span class="vendor-section-count">{{ order_count }} total</span>
+        </div>
+
+        <div class="vendor-order-list">
+            {% for order in vendor_orders %}
+                <article class="vendor-order-row">
+                    <span class="vendor-order-icon"><i class="bi bi-bag-check" aria-hidden="true"></i></span>
+                    <div class="vendor-order-info">
+                        <strong>{{ order.order_id }}</strong>
+                        <span>{{ order.user.username }} <span aria-hidden="true">·</span> {{ order.created_at|date:"M j, Y, g:i A" }}</span>
+                    </div>
+                    <span class="vendor-order-status {% if order.status == 'completed' %}status-complete{% else %}status-open{% endif %}">{{ order.status|title }}</span>
+                    <div class="vendor-order-actions">
+                        <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                        {% if order.status != 'completed' %}
+                            <a href="{% url 'complete_order' order.id %}" class="btn btn-sm btn-primary">Complete</a>
+                        {% endif %}
+                    </div>
+                </article>
+            {% empty %}
+                <div class="vendor-dashboard-empty">
+                    <i class="bi bi-inbox" aria-hidden="true"></i>
+                    <div><strong>No orders yet</strong><span>New customer orders will appear here.</span></div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="vendor-dashboard-section vendor-menu-section" aria-labelledby="vendor-menu-heading">
+        <div class="vendor-dashboard-section-heading">
+            <div>
+                <span class="section-tag">Your offerings</span>
+                <h2 id="vendor-menu-heading">Menu</h2>
+            </div>
+        </div>
+
+        <div class="vendor-menu-grid">
+            {% for item in menu_items %}
+                <article class="vendor-menu-item">
+                    {% if item.food_image %}
+                        <img src="{{ item.food_image.url }}" alt="{{ item.food_name }}" class="vendor-menu-image">
+                    {% else %}
+                        <div class="vendor-menu-image-placeholder"><i class="bi bi-image" aria-hidden="true"></i></div>
+                    {% endif %}
+                    <div class="vendor-menu-content">
+                        <div class="vendor-menu-meta">
+                            <span>{{ item.category }}</span>
+                            <span class="vendor-availability {% if item.is_available %}is-available{% else %}is-unavailable{% endif %}">
+                                {% if item.is_available %}Available{% else %}Unavailable{% endif %}
+                            </span>
+                        </div>
+                        <h3>{{ item.food_name }}</h3>
+                        <div class="vendor-menu-footer">
+                            <strong>₹{{ item.price }}</strong>
+                            <div class="vendor-menu-actions">
+                                <a href="{% url 'menu_edit' item.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <form method="post" action="{% url 'menu_toggle_availability' item.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm {% if item.is_available %}btn-outline-secondary{% else %}btn-primary{% endif %}" aria-label="{% if item.is_available %}Hide {{ item.food_name }}{% else %}Restore {{ item.food_name }}{% endif %}" title="{% if item.is_available %}Remove from customer menus{% else %}Restore to customer menus{% endif %}">
+                                        <i class="bi {% if item.is_available %}bi-eye-slash{% else %}bi-arrow-counterclockwise{% endif %}" aria-hidden="true"></i>
+                                        {% if item.is_available %}Hide{% else %}Restore{% endif %}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            {% empty %}
+                <div class="vendor-dashboard-empty vendor-menu-empty">
+                    <i class="bi bi-journal-plus" aria-hidden="true"></i>
+                    <div><strong>Your menu is empty</strong><span>Add your first dish to start building your restaurant menu.</span></div>
+                    <a href="{% url 'menu_add' %}" class="btn btn-primary">Add a dish</a>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container menu-form-page">
+    <section class="profile-shell menu-form-shell">
+        <header class="profile-header menu-form-header">
+            <div>
+                <span class="section-tag">Menu management</span>
+                <h2>Add a dish</h2>
+                <p>Give customers the details they need to order.</p>
+            </div>
+            <span class="menu-form-mark"><i class="bi bi-egg-fried" aria-hidden="true"></i></span>
+        </header>
+
+        <form method="post" enctype="multipart/form-data" class="menu-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <div class="menu-form-grid">
+                <div class="menu-form-field">
+                    <label class="form-label" for="{{ form.food_name.id_for_label }}">Food name</label>
+                    {{ form.food_name }}
+                    {{ form.food_name.errors }}
+                </div>
+                <div class="menu-form-field">
+                    <label class="form-label" for="{{ form.price.id_for_label }}">Price</label>
+                    <div class="menu-price-input">
+                        <span aria-hidden="true">₹</span>
+                        {{ form.price }}
+                    </div>
+                    {{ form.price.errors }}
+                </div>
+                <div class="menu-form-field">
+                    <label class="form-label" for="{{ form.category.id_for_label }}">Category</label>
+                    {{ form.category }}
+                    {{ form.category.errors }}
+                </div>
+                <div class="menu-form-field menu-description-field">
+                    <label class="form-label" for="{{ form.description.id_for_label }}">Description <span class="menu-optional">Optional</span></label>
+                    {{ form.description }}
+                    {{ form.description.errors }}
+                </div>
+                <div class="menu-form-field menu-image-field">
+                    <label class="form-label" for="{{ form.food_image.id_for_label }}">Dish photo <span class="menu-optional">Optional</span></label>
+                    {% if form.instance.food_image %}
+                        <div class="menu-image-current">
+                            <img src="{{ form.instance.food_image.url }}" alt="Current photo of {{ form.instance.food_name }}">
+                            <span>Current dish photo</span>
+                        </div>
+                    {% endif %}
+                    {{ form.food_image }}
+                    {{ form.food_image.errors }}
+                </div>
+                <label class="menu-availability" for="{{ form.is_available.id_for_label }}">
+                    {{ form.is_available }}
+                    <span><strong>Available to order</strong><small>Customers can see and order this dish.</small></span>
+                </label>
+            </div>
+
+            <footer class="menu-form-actions">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add item</button>
+                <a href="{% url 'vendor_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+            </footer>
+        </form>
+    </section>
+</div>
+{% endblock %}

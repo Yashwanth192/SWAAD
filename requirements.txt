@@ -1,0 +1,7 @@
+Django>=6.0,<7.0
+django-crispy-forms
+crispy-bootstrap5
+django-recaptcha
+django-auto-logout
+Pillow
+python-dotenv>=1.0,<2.0

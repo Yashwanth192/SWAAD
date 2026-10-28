@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Order Details</h2>
+                <span class="badge {% if order.status == 'completed' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                    {{ order.status|title }}
+                </span>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><strong>Order ID:</strong> {{ order.order_id }}</p>
+                    <p><strong>Customer:</strong> {{ order.user.username }}</p>
+                    <p><strong>Restaurant:</strong> {{ order.vendor.restaurant_name }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Ordered on:</strong> {{ order.created_at|date:'d M Y, H:i' }}</p>
+                    <p><strong>Status:</strong> {{ order.status|title }}</p>
+                </div>
+            </div>
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                    <tr>
+                        <td>{{ item.menu.food_name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>₹{{ item.price }}</td>
+                        <td>₹{{ item.line_total }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="text-end mt-3">
+                <h4><strong>Subtotal: ₹{{ order.subtotal }}</strong></h4>
+                {% if order.discount_amount %}
+                    <div class="text-muted">Discount: -₹{{ order.discount_amount }}</div>
+                {% endif %}
+                <h4><strong>Total: ₹{{ order.total_price }}</strong></h4>
+            </div>
+
+            {% if request.user == order.vendor.user and order.status != 'completed' %}
+                <div class="mt-4 text-end">
+                    <form method="post" action="{% url 'update_order_status' order.id %}" class="d-flex gap-2 justify-content-end align-items-center">
+                        {% csrf_token %}
+                        <select name="status" class="form-select" style="max-width: 220px;">
+                            {% for value, label in order.STATUS_CHOICES %}
+                                <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary">Update Status</button>
+                    </form>
+                    <a href="{% url 'complete_order' order.id %}" class="btn btn-success mt-3">Mark as Completed</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

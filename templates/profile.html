@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="profile-shell">
+        <div class="profile-header">
+            <div>
+                <span class="section-tag">Profile</span>
+                <h2>My account</h2>
+            </div>
+            <a href="{% url 'update' %}" class="btn btn-primary">Update profile</a>
+        </div>
+
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-8">
+                <div class="info-card">
+                    <h3>Personal details</h3>
+                    <div class="info-grid">
+                        <div class="info-item"><span>Username</span><strong>{{ user.username }}</strong></div>
+                        <div class="info-item"><span>Email</span><strong>{{ user.email }}</strong></div>
+                        <div class="info-item"><span>Phone</span><strong>{{ user_details.phone }}</strong></div>
+                        <div class="info-item"><span>Age</span><strong>{{ user_details.age }}</strong></div>
+                        <div class="info-item"><span>House no</span><strong>{{ user_details.house_no }}</strong></div>
+                        <div class="info-item"><span>Street</span><strong>{{ user_details.street }}</strong></div>
+                        <div class="info-item"><span>Landmark</span><strong>{{ user_details.landmark }}</strong></div>
+                        <div class="info-item"><span>City</span><strong>{{ user_details.city }}</strong></div>
+                        <div class="info-item"><span>State</span><strong>{{ user_details.state }}</strong></div>
+                        <div class="info-item"><span>Zipcode</span><strong>{{ user_details.zipcode }}</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="avatar-card text-center">
+                    {% if user_details.userpic %}
+                        <img src="{{ user_details.userpic.url }}" alt="Profile picture" class="profile-avatar">
+                    {% else %}
+                        <div class="profile-avatar empty-avatar">No image</div>
+                    {% endif %}
+                    <h4>{{ user.username }}</h4>
+                </div>
+            </div>
+        </div>
+
+        {% if saved_addresses or favorite_vendors or user_orders %}
+            <div class="profile-lower-grid">
+                {% if saved_addresses %}
+                    <div class="info-card">
+                        <h3>Saved addresses</h3>
+                        {% for address in saved_addresses %}
+                            <div class="mini-card">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <strong>{{ address.label }}</strong>
+                                    {% if address.is_default %}<span class="badge badge-soft">Default</span>{% endif %}
+                                </div>
+                                <p>{{ address.house_no }}, {{ address.street }}, {{ address.city }}, {{ address.state }} - {{ address.zipcode }}</p>
+                                <div class="mini-actions">
+                                    {% if not address.is_default %}
+                                        <form method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="set_default_address">
+                                            <input type="hidden" name="address_id" value="{{ address.id }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Set default</button>
+                                        </form>
+                                    {% endif %}
+                                    <form method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete_address">
+                                        <input type="hidden" name="address_id" value="{{ address.id }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if favorite_vendors %}
+                    <div class="info-card">
+                        <h3>Favorites</h3>
+                        {% for favorite in favorite_vendors %}
+                            <div class="list-row">
+                                <a href="{% url 'restaurant_detail' favorite.vendor.id %}">{{ favorite.vendor.restaurant_name }}</a>
+                                <span class="badge badge-soft">Saved</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if user_orders %}
+                    <div class="info-card">
+                        <h3>Recent orders</h3>
+                        {% for order in user_orders|slice:':3' %}
+                            <div class="order-row">
+                                <div>
+                                    <strong>{{ order.vendor.restaurant_name }}</strong>
+                                    <small>Order ID: {{ order.order_id }}</small>
+                                    <small>{{ order.created_at|date:'d M Y' }}</small>
+                                </div>
+                                <div class="order-meta">
+                                    <span class="badge {% if order.status == 'completed' %}bg-success{% else %}bg-warning text-dark{% endif %}">{{ order.status|title }}</span>
+                                    <a href="{% url 'order_detail' order.id %}">View</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <details class="address-form-card">
+            <summary class="btn btn-outline-primary address-toggle">
+                <i class="bi bi-plus-circle" aria-hidden="true"></i>
+                <span>Add new address</span>
+                <i class="bi bi-chevron-down address-toggle-chevron" aria-hidden="true"></i>
+            </summary>
+            <div class="info-card address-form-content">
+                <form method="post" class="profile-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_address">
+                    {{ address_form.as_p }}
+                    <button type="submit" class="btn btn-success">Save address</button>
+                </form>
+            </div>
+        </details>
+    </div>
+</div>
+{% endblock %}

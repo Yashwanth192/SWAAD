@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4 vendor-form-page">
+    <section class="profile-shell vendor-form-shell">
+        <header class="profile-header vendor-form-header">
+            <div>
+                <span class="section-tag">Restaurant account</span>
+                <h2>{% if is_edit %}Edit vendor profile{% else %}Register your restaurant{% endif %}</h2>
+                <p>{% if is_edit %}Keep your restaurant and contact details up to date.{% else %}Add your restaurant details to join Swaad.{% endif %}</p>
+            </div>
+            {% if is_edit %}
+                <a href="{% url 'vendor_dashboard' %}" class="btn btn-outline-primary vendor-dashboard-link">
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i> Dashboard
+                </a>
+            {% endif %}
+        </header>
+
+        <form method="POST" enctype="multipart/form-data" class="vendor-form">
+            {% csrf_token %}
+
+            {% if form.errors %}
+                <div class="alert alert-danger vendor-form-alert" role="alert">
+                    <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                    Please review the highlighted fields and try again.
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <section class="vendor-form-section">
+                <div class="vendor-section-heading">
+                    <span class="vendor-section-icon"><i class="bi bi-shop" aria-hidden="true"></i></span>
+                    <div>
+                        <h3>Business details</h3>
+                        <p>Your business and primary contact information.</p>
+                    </div>
+                </div>
+                <div class="vendor-field-grid">
+                    <div class="vendor-field">
+                        <label class="form-label" for="{{ form.vendor_name.id_for_label }}">Vendor name</label>
+                        {{ form.vendor_name }}
+                        {{ form.vendor_name.errors }}
+                    </div>
+                    <div class="vendor-field">
+                        <label class="form-label" for="{{ form.restaurant_name.id_for_label }}">Restaurant name</label>
+                        {{ form.restaurant_name }}
+                        {{ form.restaurant_name.errors }}
+                    </div>
+                    <div class="vendor-field">
+                        <label class="form-label" for="{{ form.phone_num.id_for_label }}">Phone number</label>
+                        {{ form.phone_num }}
+                        {{ form.phone_num.errors }}
+                    </div>
+                    <div class="vendor-field">
+                        <label class="form-label" for="{{ form.gst_no.id_for_label }}">GST number <span class="field-optional">Optional</span></label>
+                        {{ form.gst_no }}
+                        {{ form.gst_no.errors }}
+                    </div>
+                </div>
+            </section>
+
+            <section class="vendor-form-section">
+                <div class="vendor-section-heading">
+                    <span class="vendor-section-icon"><i class="bi bi-geo-alt" aria-hidden="true"></i></span>
+                    <div>
+                        <h3>Restaurant address</h3>
+                        <p>Where customers can find your restaurant.</p>
+                    </div>
+                </div>
+                <div class="vendor-field-grid">
+                    <div class="vendor-field">
+                        <label class="form-label" for="{{ form.address1.id_for_label }}">Address line 1</label>
+                        {{ form.address1 }}
+                        {{ form.address1.errors }}
+                    </div>
+                    <div class="vendor-field">
+                        <label class="form-label" for="{{ form.address2.id_for_label }}">Address line 2 <span class="field-optional">Optional</span></label>
+                        {{ form.address2 }}
+                        {{ form.address2.errors }}
+                    </div>
+                    <div class="vendor-field">
+                        <label class="form-label" for="{{ form.city.id_for_label }}">City</label>
+                        {{ form.city }}
+                        {{ form.city.errors }}
+                    </div>
+                    <div class="vendor-field">
+                        <label class="form-label" for="{{ form.state.id_for_label }}">State</label>
+                        {{ form.state }}
+                        {{ form.state.errors }}
+                    </div>
+                    <div class="vendor-field">
+                        <label class="form-label" for="{{ form.zipcode.id_for_label }}">Zipcode</label>
+                        {{ form.zipcode }}
+                        {{ form.zipcode.errors }}
+                    </div>
+                </div>
+            </section>
+
+            <section class="vendor-form-section vendor-media-section">
+                <div class="vendor-section-heading">
+                    <span class="vendor-section-icon"><i class="bi bi-images" aria-hidden="true"></i></span>
+                    <div>
+                        <h3>Restaurant images</h3>
+                        <p>Upload clear images for your restaurant profile.</p>
+                    </div>
+                </div>
+                <div class="vendor-field-grid">
+                    <div class="vendor-field vendor-upload-field">
+                        <label class="form-label" for="{{ form.licence_img.id_for_label }}">Business license <span class="field-optional">Optional</span></label>
+                        {% if form.instance.licence_img %}
+                            <img src="{{ form.instance.licence_img.url }}" alt="Current business license" class="vendor-image-preview">
+                        {% endif %}
+                        {{ form.licence_img }}
+                        {{ form.licence_img.errors }}
+                    </div>
+                    <div class="vendor-field vendor-upload-field">
+                        <label class="form-label" for="{{ form.restaurant_img.id_for_label }}">Restaurant photo <span class="field-optional">Optional</span></label>
+                        {% if form.instance.restaurant_img %}
+                            <img src="{{ form.instance.restaurant_img.url }}" alt="Current restaurant photo" class="vendor-image-preview">
+                        {% endif %}
+                        {{ form.restaurant_img }}
+                        {{ form.restaurant_img.errors }}
+                    </div>
+                </div>
+            </section>
+
+            <div class="vendor-form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check2" aria-hidden="true"></i>
+                    {% if is_edit %}Save changes{% else %}Register vendor{% endif %}
+                </button>
+                <a href="{% if is_edit %}{% url 'vendor_dashboard' %}{% else %}{% url 'home' %}{% endif %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </section>
+</div>
+
+{% endblock %}

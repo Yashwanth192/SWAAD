@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="auth-shell auth-shell-wide">
+                <div class="auth-header text-center">
+                    <span class="section-tag">Join Swaad</span>
+                    <h2>Create your account</h2>
+                </div>
+
+                {% if registered %}
+                    <div class="text-center py-4">
+                        <h3 class="text-success fw-bold">Thank you for registering!</h3>
+                        <p class="mb-0 mt-3">Please <a href="{% url 'login' %}">login</a> to continue your food journey.</p>
+                    </div>
+                {% else %}
+                    <form method="POST" enctype="multipart/form-data" class="auth-form">
+                        {% csrf_token %}
+
+                        <div class="row g-3">
+                            <div class="col-md-6">{{ form1.username|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form1.email|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form2.phone|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form2.age|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form2.house_no|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form2.street|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form2.landmark|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form2.city|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form2.state|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form2.zipcode|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form1.password|as_crispy_field }}</div>
+                            <div class="col-md-6">{{ form2.userpic|as_crispy_field }}</div>
+                            <div class="col-12">{{ form2.captcha|as_crispy_field }}</div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">Register</button>
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

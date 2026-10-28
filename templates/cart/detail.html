@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h1 class="mb-4">Your cart</h1>
+    {% if cart_items %}
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Food item</th><th>Restaurant</th><th>Price</th><th>Quantity</th><th>Total</th><th></th></tr></thead>
+            <tbody>
+            {% for item in cart_items %}
+            <tr>
+                <td>
+                    {% if item.menu.food_image %}
+                    <img src="{{ item.menu.food_image.url }}" alt="{{ item.menu.food_name }}" class="rounded me-2" style="width: 64px; height: 64px; object-fit: cover;">
+                    {% endif %}
+                    {{ item.menu.food_name }}
+                </td>
+                <td>{{ item.menu.vendor.restaurant_name }}</td>
+                <td>₹{{ item.menu.price }}</td>
+                <td>
+                    <form method="post" action="{% url 'cart_update' item.id %}" class="cart-update-form">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-secondary quantity-minus" aria-label="Decrease quantity">-</button>
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="99" class="form-control text-center cart-quantity" data-price="{{ item.menu.price }}" aria-label="Quantity for {{ item.menu.food_name }}">
+                            <button type="button" class="btn btn-outline-secondary quantity-plus" aria-label="Increase quantity">+</button>
+                        </div>
+                    </form>
+                </td>
+                <td>₹<span class="cart-line-total">{{ item.line_total }}</span></td>
+                <td>
+                    <form method="post" action="{% url 'cart_remove' item.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card mt-4 shadow-sm">
+        <div class="card-body">
+            <form method="post" action="{% url 'place_order' %}">
+                {% csrf_token %}
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label for="coupon_code" class="form-label">Coupon code</label>
+                        <div class="input-group coupon-entry">
+                            <input type="text" id="coupon_code" name="coupon_code" class="form-control" placeholder="e.g. SWAAD10" value="{{ applied_coupon_code }}">
+                            <button type="submit" formaction="{% url 'coupon_apply' %}" formmethod="post" class="btn btn-outline-primary">Apply coupon</button>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="payment_method" class="form-label">Payment</label>
+                        <select id="payment_method" name="payment_method" class="form-select">
+                            <option value="cod">Cash on Delivery</option>
+                            <option value="online">Online Payment</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <span class="cart-subtotal d-block">Subtotal: ₹{{ cart_subtotal }}</span>
+                        {% if applied_coupon %}
+                            <span class="coupon-savings d-block">{{ applied_coupon.code }} applied · Save ₹{{ coupon_discount }}</span>
+                        {% endif %}
+                        <strong class="fs-4 d-block mb-2">Total: ₹<span id="cart-total">{{ cart_total }}</span></strong>
+                        <button type="submit" class="btn btn-success">Place Order</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% if coupon_alert %}
+        <div class="alert alert-warning cart-coupon-alert" role="alert">
+            <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+            <span>{{ coupon_alert }}</span>
+        </div>
+    {% endif %}
+    {% else %}
+    <div class="alert alert-info">Your cart is empty.</div>
+    <a href="{% url 'home' %}" class="btn btn-primary">Browse restaurants</a>
+    {% endif %}
+</div>
+<script>
+    document.querySelectorAll('.cart-update-form').forEach(function (form) {
+        const quantityInput = form.querySelector('.cart-quantity');
+        const lineTotal = form.closest('tr').querySelector('.cart-line-total');
+
+        form.querySelector('.quantity-minus').addEventListener('click', function () {
+            quantityInput.value = Math.max(1, Number(quantityInput.value) - 1);
+            form.submit();
+        });
+
+        form.querySelector('.quantity-plus').addEventListener('click', function () {
+            quantityInput.value = Math.min(99, Number(quantityInput.value) + 1);
+            form.submit();
+        });
+
+        quantityInput.addEventListener('input', function () {
+            const quantity = Math.max(1, Math.min(99, Number(quantityInput.value) || 1));
+            lineTotal.textContent = (Number(quantityInput.dataset.price) * quantity).toFixed(2);
+
+            let cartTotal = 0;
+            document.querySelectorAll('.cart-quantity').forEach(function (input) {
+                const currentQuantity = Math.max(1, Math.min(99, Number(input.value) || 1));
+                cartTotal += Number(input.dataset.price) * currentQuantity;
+            });
+            document.getElementById('cart-total').textContent = cartTotal.toFixed(2);
+        });
+
+        quantityInput.addEventListener('change', function () {
+            quantityInput.value = Math.max(1, Math.min(99, Number(quantityInput.value) || 1));
+            form.submit();
+        });
+    });
+</script>
+{% endblock %}
